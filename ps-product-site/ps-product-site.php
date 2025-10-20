@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: 基于上传的前端模板，提供“产品”CPT、后台字段、REST JSON 输出与短代码展示（与 Avada/任意主题兼容）。
- * Version: 1.1.0
+ * Description: 产品CPT + 后台字段 + REST(JSON) + 目录短代码。v1.2 修复：恢复前端片段渲染。
+ * Version: 1.2.0
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -18,7 +18,7 @@ class PS_Product_Site_Plugin {
     register_activation_hook(__FILE__,[$this,'on_activate']);
   }
   function register_cpt_tax(){
-    register_post_type(self::CPT,[ 'labels'=>['name'=>'产品','singular_name'=>'产品','menu_name'=>'产品','add_new'=>'新建产品','add_new_item'=>'新建产品','edit_item'=>'编辑产品','new_item'=>'新产品','view_item'=>'查看产品','search_items'=>'搜索产品','not_found'=>'未找到产品','not_found_in_trash'=>'回收站无产品'], 'public'=>true,'show_in_menu'=>true,'menu_icon'=>'dashicons-products','supports'=>['title','editor','thumbnail','excerpt'],'has_archive'=>true,'rewrite'=>['slug'=>'products'],'show_in_rest'=>true ]);
+    register_post_type(self::CPT,[ 'labels'=>['name'=>'产品','singular_name'=>'产品','menu_name'=>'产品'], 'public'=>true,'show_in_menu'=>true,'menu_icon'=>'dashicons-products','supports'=>['title','editor','thumbnail','excerpt'],'has_archive'=>true,'rewrite'=>['slug'=>'products'],'show_in_rest'=>true ]);
     register_taxonomy(self::TAX,[self::CPT],[ 'labels'=>['name'=>'产品分类','singular_name'=>'产品分类','menu_name'=>'产品分类'], 'public'=>true,'hierarchical'=>true,'show_admin_column'=>true,'show_in_rest'=>true,'rewrite'=>['slug'=>'product-category'] ]);
   }
   function register_metaboxes(){ add_meta_box('ps_product_info','产品信息（前端展示字段）',[$this,'render_metabox'],self::CPT,'normal','default'); }
@@ -48,7 +48,24 @@ class PS_Product_Site_Plugin {
   private function get_image_or_featured($id,$k){ $u=get_post_meta($id,$k,true); if($u) return esc_url_raw($u); if($k==='ps_img1'){ $t=get_the_post_thumbnail_url($id,'large'); if($t) return esc_url_raw($t);} return ''; }
   function register_rest(){ register_rest_route('ps/v1','/products',['methods'=>'GET','callback'=>[$this,'rest_products'],'permission_callback'=>'__return_true']); }
   function rest_products($req){ $q=new WP_Query(['post_type'=>self::CPT,'post_status'=>'publish','posts_per_page'=>-1,'orderby'=>'title','order'=>'ASC']); $items=[]; while($q->have_posts()){ $q->the_post(); $id=get_the_ID(); $terms=get_the_terms($id,self::TAX); $cat=($terms&&!is_wp_error($terms))?$terms[0]->name:'未分类'; $items[]=[ 'id'=>$id,'title'=>get_the_title(),'sub'=>get_post_meta($id,'ps_sub',true),'desc'=>wp_strip_all_tags(get_the_content('',false)),'img1'=>$this->get_image_or_featured($id,'ps_img1'),'A5'=>$this->get_image_or_featured($id,'ps_img2'),'A8'=>$this->get_image_or_featured($id,'ps_img3'),'A11'=>$this->get_image_or_featured($id,'ps_img4'),'A6'=>get_post_meta($id,'ps_features_title',true),'A7'=>get_post_meta($id,'ps_features_lines',true),'A9'=>get_post_meta($id,'ps_scenarios_title',true),'A10'=>get_post_meta($id,'ps_scenarios_lines',true),'A12'=>get_post_meta($id,'ps_extra_text',true),'Unnamed:_17'=>get_post_meta($id,'ps_extra2',true),'Unnamed:_18'=>get_post_meta($id,'ps_extra3',true),'table1'=>get_post_meta($id,'ps_table1',true),'table2'=>get_post_meta($id,'ps_table2',true),'内容栏目'=>$cat ]; } wp_reset_postdata(); return rest_ensure_response($items); }
-  function shortcode_catalog($atts=[]){ $atts=shortcode_atts(['fullwidth'=>'0','maxwidth'=>'1280'],$atts); $path=plugin_dir_path(__FILE__).'assets/product-site-fragment.html'; if(!file_exists($path)) return '<p>前端模板缺失。</p>'; $html=file_get_contents($path); $endpoint=esc_url_raw(rest_url('ps/v1/products')); $html=str_replace('__PS_PRODUCTS_ENDPOINT__',$endpoint,$html); if($atts['fullwidth']==='1'){ $max=intval($atts['maxwidth']); if($max<=0) $max=1280; $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'.$max.'px;margin:0 auto;padding:0 16px;}@media(max-width:1024px){#ps-product-site .wrapper.page{display:block !important;}}</style>'; return $css.'<div class="ps-edge-wide">'.$html.'</div>'; } return $html; }
+  function shortcode_catalog($atts=[]){
+    $atts=shortcode_atts(['fullwidth'=>'0','maxwidth'=>'1280'],$atts);
+    $path=plugin_dir_path(__FILE__).'assets/product-site-fragment.html';
+    if(!file_exists($path)) return '<p>前端模板缺失。</p>';
+    $html=file_get_contents($path);
+    $endpoint=esc_url_raw(rest_url('ps/v1/products'));
+    $html=str_replace('__PS_PRODUCTS_ENDPOINT__',$endpoint,$html);
+    if($atts['fullwidth']==='1'){
+      $max=intval($atts['maxwidth']); if($max<=0) $max=1280;
+      $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'+str(0)+'px;margin:0 auto;padding:0 16px;}</style>';
+    }
+    if($atts['fullwidth']==='1'){
+      $max=intval($atts['maxwidth']); if($max<=0) $max=1280;
+      $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'.$max.'px;margin:0 auto;padding:0 16px;}@media(max-width:1024px){#ps-product-site .wrapper.page{display:block !important;}}</style>';
+      return $css.'<div class="ps-edge-wide">'.$html.'</div>';
+    }
+    return $html;
+  }
   function on_activate(){ $this->register_cpt_tax(); flush_rewrite_rules(); if(!get_page_by_title('产品目录')){ wp_insert_post(['post_title'=>'产品目录','post_status'=>'publish','post_type'=>'page','post_content'=>'[product_catalog]']); } }
 }
 new PS_Product_Site_Plugin();
