@@ -1,0 +1,1360 @@
+<div id="ps-product-site">
+<style>
+    :root {
+      --background: #f5f6fb;
+      --panel: #ffffff;
+      --text-primary: #1f2933;
+      --text-secondary: #52606d;
+      --accent: #2f6fed;
+      --border-color: #d9e2ec;
+      --shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .site-header {
+      background: linear-gradient(135deg, #2f6fed, #5c8dff);
+      color: #ffffff;
+      padding: 44px 0 36px;
+    }
+
+    .site-header h1 {
+      margin: 0;
+      font-size: 2.1rem;
+      font-weight: 700;
+    }
+
+    .site-header p {
+      margin: 14px 0 0;
+      max-width: 640px;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 1rem;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+      gap: 24px;
+      margin: 32px 0 40px;
+    }
+
+    .sidebar {
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      max-height: 720px;
+    }
+
+    .sidebar__head {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar__head h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .search {
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 10px 38px 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.18);
+    }
+
+    .search__icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .sidebar__body {
+      display: grid;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .sidebar__categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    .category-tab {
+      flex-shrink: 0;
+      border: 1px solid rgba(47, 111, 237, 0.35);
+      border-radius: 999px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .category-tab:hover,
+    .category-tab:focus {
+      outline: none;
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 8px 18px rgba(47, 111, 237, 0.2);
+    }
+
+    .category-tab--active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 10px 22px rgba(47, 111, 237, 0.24);
+    }
+
+    .sidebar__empty {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .product-list__item {
+      border: 1px solid transparent;
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product-list__group-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 12px 4px 0;
+    }
+
+    .product-list__item:hover {
+      background: #e8f1ff;
+    }
+
+    .product-list__item--active {
+      background: #2f6fed;
+      color: #ffffff;
+      border-color: #1f4fd8;
+      box-shadow: 0 10px 22px rgba(47, 111, 237, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .product-list__title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .product-list__subtitle {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .product-list__excerpt {
+      font-size: 0.8rem;
+      opacity: 0.72;
+    }
+
+    .content {
+      background: var(--panel);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      min-height: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .status {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .status--info,
+    .status--muted {
+      color: var(--text-secondary);
+    }
+
+    .status--error {
+      color: #d61f1f;
+      font-weight: 600;
+    }
+
+    .product {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .product__meta-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(47, 111, 237, 0.12);
+      color: #1f4fd8;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .chip--muted {
+      background: rgba(82, 96, 109, 0.12);
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .chip[hidden] {
+      display: none !important;
+    }
+
+    .product__title {
+      margin: 10px 0 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .product__desc {
+      margin: 16px 0 0;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      white-space: pre-line;
+    }
+
+    .product__hero {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .product__figure {
+      margin: 0;
+      background: #f1f5f9;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product__figure img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product__overview {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .product__gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .product__gallery[hidden] {
+      display: none !important;
+    }
+
+    .gallery__item {
+      border: 2px solid transparent;
+      border-radius: 14px;
+      background: #f8fafc;
+      cursor: pointer;
+      padding: 0;
+      width: 86px;
+      height: 86px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .gallery__item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .gallery__item:hover {
+      transform: translateY(-2px);
+    }
+
+    .gallery__item--active {
+      border-color: var(--accent);
+      box-shadow: 0 6px 16px rgba(47, 111, 237, 0.28);
+    }
+
+    .product-section {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .product-section[hidden] {
+      display: none !important;
+    }
+
+    .product-section__title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .product-section__list {
+      margin: 0;
+      padding-left: 22px;
+      display: grid;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .product-section__table {
+      overflow-x: auto;
+    }
+
+    .product-section__table table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px #e1e7ef;
+    }
+
+    .product-section__table th,
+    .product-section__table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #e1e7ef;
+      text-align: left;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .product-section__table th {
+      background: #eef2ff;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .product-section__table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .product-details {
+      background: linear-gradient(140deg, #1236b1, #081d65);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      color: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .product-details[hidden] {
+      display: none !important;
+    }
+
+    .product-details__tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .details-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      line-height: 1.2;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .details-tab:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
+    }
+
+    .details-tab:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    .details-tab--active {
+      background: #ffffff;
+      color: #102a8d;
+      border-color: transparent;
+      box-shadow: 0 12px 26px rgba(16, 42, 141, 0.3);
+    }
+
+    .product-details__panel {
+      background: #ffffff;
+      border-radius: 16px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+    }
+
+    .product-details__panel table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .product-details__panel th,
+    .product-details__panel td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e1e7ef;
+      text-align: left;
+    }
+
+    .product-details__panel th {
+      background: #eef2ff;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .product-details__panel tr:last-child td {
+      border-bottom: none;
+    }
+
+    .site-footer {
+      padding: 18px 0 32px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    code {
+      background: rgba(82, 96, 109, 0.12);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 1100px) {
+      .page {
+        grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 960px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        max-height: none;
+      }
+
+      .sidebar__body {
+        max-height: 340px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wrapper {
+        padding: 0 18px;
+      }
+
+      .site-header {
+        padding: 32px 0 26px;
+      }
+
+      .product__hero {
+        grid-template-columns: 1fr;
+      }
+
+      .product-details {
+        padding: 18px;
+      }
+
+      .product-details__tabs {
+        flex-direction: column;
+      }
+
+      .sidebar__categories {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        overflow-x: auto;
+        padding-bottom: 6px;
+      }
+
+      .details-tab {
+        width: 100%;
+      }
+
+      .category-tab {
+        width: auto;
+      }
+    }
+  </style>
+
+
+  <main class="wrapper page">
+    <aside class="sidebar">
+      <div class="sidebar__head">
+        <h2>产品目录</h2>
+        <label class="search">
+          <input type="search" id="product-search" autocomplete="off" placeholder="搜索产品名称或型号">
+          <span class="search__icon" aria-hidden="true">🔍</span>
+        </label>
+      </div>
+      <div class="sidebar__categories" id="category-tabs" role="tablist" aria-label="产品分类" aria-orientation="horizontal"></div>
+      <div class="sidebar__body" id="product-list" role="list"></div>
+      <p class="sidebar__empty" data-state="list-empty" hidden>暂无匹配的产品。</p>
+    </aside>
+
+    <section class="content">
+      <p class="status status--info" data-state="loading">正在加载产品数据...</p>
+      <p class="status status--error" data-state="error" hidden>数据加载失败，请检查 <code>data.json</code> 文件。</p>
+      <p class="status status--muted" data-state="prompt">请选择左侧产品以查看详情。</p>
+
+      <article class="product" data-state="product" hidden>
+        <header class="product__header">
+          <div class="product__meta-line">
+            <span class="chip" data-field="category"></span>
+            <span class="chip chip--muted" data-field="code"></span>
+          </div>
+          <h2 class="product__title" data-field="title"></h2>
+        </header>
+
+        <p class="product__desc" data-field="desc"></p>
+
+        <div class="product__hero">
+          <figure class="product__figure">
+            <img data-field="hero-image" alt="产品主图" loading="lazy">
+          </figure>
+          <div class="product__overview">
+            <div class="product__gallery" data-field="gallery"></div>
+          </div>
+        </div>
+
+        <section class="product-section" data-section="features" hidden>
+          <h3 class="product-section__title" data-field="features-title"></h3>
+          <ul class="product-section__list" data-field="features-list"></ul>
+        </section>
+
+        <section class="product-section" data-section="scenarios" hidden>
+          <h3 class="product-section__title" data-field="scenarios-title"></h3>
+          <ul class="product-section__list" data-field="scenarios-list"></ul>
+        </section>
+
+        <section class="product-details" data-section="details" hidden>
+          <div class="product-details__tabs" data-field="details-tabs" role="tablist"></div>
+          <div class="product-details__panel" data-field="details-panel" role="tabpanel"></div>
+        </section>
+
+        <section class="product-section" data-section="extra-text" hidden>
+          <h3 class="product-section__title">补充说明</h3>
+          <ul class="product-section__list" data-field="extra-list"></ul>
+        </section>
+      </article>
+    </section>
+  </main>
+
+<script>
+    (function () {
+      'use strict';
+
+      const placeholderImage = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#f8fafc"/></linearGradient></defs><rect width="600" height="400" fill="url(#g)"/><text x="50%" y="50%" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="32" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle">暂无图片</text></svg>');
+      const defaultPromptText = '请选择左侧产品以查看详情。';
+      const categoryFieldKey = '内容栏目';
+      const uncategorizedLabel = '未分类';
+      const allCategoriesLabel = '全部';
+      const zhCollator = typeof Intl !== 'undefined' ? new Intl.Collator('zh-Hans-CN', { sensitivity: 'base' }) : null;
+
+      const state = {
+        products: [],
+        filtered: [],
+        categories: [],
+        activeCategory: allCategoriesLabel,
+        activeId: null
+      };
+
+      const elements = {
+        list: document.getElementById('product-list'),
+        search: document.getElementById('product-search'),
+        loading: document.querySelector('[data-state="loading"]'),
+        error: document.querySelector('[data-state="error"]'),
+        prompt: document.querySelector('[data-state="prompt"]'),
+        listEmpty: document.querySelector('[data-state="list-empty"]'),
+        product: document.querySelector('[data-state="product"]'),
+        categoryTabs: document.getElementById('category-tabs'),
+        fields: {
+          category: document.querySelector('[data-field="category"]'),
+          code: document.querySelector('[data-field="code"]'),
+          title: document.querySelector('[data-field="title"]'),
+          desc: document.querySelector('[data-field="desc"]'),
+          heroImage: document.querySelector('[data-field="hero-image"]'),
+        gallery: document.querySelector('[data-field="gallery"]'),
+        featuresTitle: document.querySelector('[data-field="features-title"]'),
+        featuresList: document.querySelector('[data-field="features-list"]'),
+        scenariosTitle: document.querySelector('[data-field="scenarios-title"]'),
+        scenariosList: document.querySelector('[data-field="scenarios-list"]'),
+        detailsTabs: document.querySelector('[data-field="details-tabs"]'),
+        detailsPanel: document.querySelector('[data-field="details-panel"]'),
+        extraList: document.querySelector('[data-field="extra-list"]')
+      },
+      sections: {
+        features: document.querySelector('[data-section="features"]'),
+        scenarios: document.querySelector('[data-section="scenarios"]'),
+        details: document.querySelector('[data-section="details"]'),
+        extraText: document.querySelector('[data-section="extra-text"]')
+      }
+      };
+
+      elements.prompt.textContent = defaultPromptText;
+
+      function formatText(value) {
+        if (value == null) {
+          return '';
+        }
+        if (typeof value !== 'string') {
+          return String(value);
+        }
+        return value.replace(/\r\n/g, '\n').trim();
+      }
+
+      function parseLines(value) {
+        if (value == null) {
+          return [];
+        }
+        const raw = typeof value === 'string' ? value : String(value);
+        const trailingPunctuationPattern = /[,\uFF0C;\uFF1B]+$/g;
+        const leadingPunctuationPattern = /^[,\uFF0C;\uFF1B]+/g;
+        const leadingMarkersPattern = /^[\-\u2022\u25CF\u25AA\u00B7]+\s*/g;
+        const bulletPattern = /[\u2022\u25CF\u25AA\u00B7]+/g;
+        return raw
+          .replace(/\r\n/g, '\n')
+          .split(/\n+/)
+          .map((item) =>
+            item
+              .replace(trailingPunctuationPattern, '')
+              .replace(leadingPunctuationPattern, '')
+              .replace(leadingMarkersPattern, '')
+              .replace(bulletPattern, ' ')
+              .trim()
+          )
+          .filter(Boolean);
+      }
+      function getImages(product) {
+        const fields = ['img1', 'A5', 'A8', 'A11'];
+        const seen = new Set();
+        const images = [];
+        fields.forEach((key) => {
+          const src = formatText(product[key]);
+          if (!src || seen.has(src)) {
+            return;
+          }
+          seen.add(src);
+          images.push(src);
+        });
+        return images;
+      }
+
+      function resolveCategory(product) {
+        const category = formatText(product[categoryFieldKey]);
+        return category || uncategorizedLabel;
+      }
+
+      function updateCategoryButtonStyles() {
+        if (!elements.categoryTabs) {
+          return;
+        }
+        const buttons = elements.categoryTabs.querySelectorAll('.category-tab');
+        buttons.forEach((button) => {
+          const { category } = button.dataset;
+          const isActive = category === state.activeCategory;
+          button.classList.toggle('category-tab--active', isActive);
+          button.setAttribute('aria-selected', String(isActive));
+          button.tabIndex = isActive ? 0 : -1;
+        });
+      }
+
+      function selectCategory(category, options = {}) {
+        if (!category) {
+          category = allCategoriesLabel;
+        }
+        if (state.activeCategory === category) {
+          return;
+        }
+        state.activeCategory = category;
+        updateCategoryButtonStyles();
+        applyFilter(elements.search ? elements.search.value.trim() : '');
+        if (options.focus && elements.categoryTabs) {
+          const activeButton = elements.categoryTabs.querySelector('.category-tab--active');
+          if (activeButton) {
+            activeButton.focus({ preventScroll: true });
+          }
+        }
+      }
+
+      function renderCategoryTabs() {
+        if (!elements.categoryTabs) {
+          return;
+        }
+        const container = elements.categoryTabs;
+        container.innerHTML = '';
+        if (!state.categories.length) {
+          container.hidden = true;
+          container.setAttribute('aria-hidden', 'true');
+          container.onkeydown = null;
+          return;
+        }
+
+        container.hidden = false;
+        container.setAttribute('aria-hidden', 'false');
+        const fragment = document.createDocumentFragment();
+        state.categories.forEach((category, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'category-tab';
+          button.dataset.category = category;
+          button.textContent = category;
+          button.setAttribute('role', 'tab');
+          button.setAttribute('aria-controls', elements.list ? elements.list.id : '');
+          button.setAttribute('aria-selected', 'false');
+          button.tabIndex = -1;
+          button.addEventListener('click', () => selectCategory(category));
+          fragment.appendChild(button);
+        });
+
+        container.appendChild(fragment);
+        updateCategoryButtonStyles();
+
+        container.onkeydown = (event) => {
+          const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+          if (!keys.includes(event.key)) {
+            return;
+          }
+          event.preventDefault();
+          const buttons = Array.from(container.querySelectorAll('.category-tab'));
+          if (!buttons.length) {
+            return;
+          }
+          const currentIndex = buttons.findIndex((button) => button.classList.contains('category-tab--active'));
+          const count = buttons.length;
+          let nextIndex = currentIndex;
+          if (event.key === 'ArrowRight') {
+            nextIndex = (currentIndex + 1 + count) % count;
+          } else if (event.key === 'ArrowLeft') {
+            nextIndex = (currentIndex - 1 + count) % count;
+          } else if (event.key === 'Home') {
+            nextIndex = 0;
+          } else if (event.key === 'End') {
+            nextIndex = count - 1;
+          }
+          const nextButton = buttons[nextIndex];
+          if (nextButton) {
+            selectCategory(nextButton.dataset.category, { focus: true });
+          }
+        };
+      }
+
+      function computeCategories() {
+        const unique = new Set();
+        state.products.forEach((product) => {
+          const category = resolveCategory(product);
+          unique.add(category);
+        });
+        const categories = Array.from(unique).sort((a, b) => {
+          if (zhCollator) {
+            return zhCollator.compare(a, b);
+          }
+          return a.localeCompare(b);
+        });
+        state.categories = [allCategoriesLabel, ...categories];
+        if (!state.categories.includes(state.activeCategory)) {
+          state.activeCategory = allCategoriesLabel;
+        }
+        renderCategoryTabs();
+      }
+
+      function sanitizeTable(html) {
+        try {
+          const parser = new DOMParser();
+          const parsed = parser.parseFromString('<div>' + html + '</div>', 'text/html');
+          const allowed = new Set(['TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'CAPTION', 'COLGROUP', 'COL']);
+          const walker = document.createTreeWalker(parsed.body, NodeFilter.SHOW_ELEMENT);
+          const toRemove = [];
+          let node = walker.nextNode();
+          while (node) {
+            if (node !== parsed.body && !allowed.has(node.tagName)) {
+              toRemove.push(node);
+            }
+            node = walker.nextNode();
+          }
+          toRemove.forEach((element) => {
+            const parent = element.parentNode;
+            if (!parent) {
+              return;
+            }
+            while (element.firstChild) {
+              parent.insertBefore(element.firstChild, element);
+            }
+            parent.removeChild(element);
+          });
+          return parsed.body.innerHTML;
+        } catch (error) {
+          console.warn('表格内容解析失败，已回退为原始 HTML', error);
+          return html;
+        }
+      }
+
+      function buildTableData(html, fallbackTitle, orderIndex) {
+        if (!html || !html.trim()) {
+          return null;
+        }
+        const sanitized = sanitizeTable(html);
+        if (!sanitized.trim()) {
+          return null;
+        }
+        let title = fallbackTitle || '参数明细 ' + (orderIndex + 1);
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(sanitized, 'text/html');
+          const headingCell =
+            doc.querySelector('th[colspan], td[colspan]') ||
+            doc.querySelector('thead th') ||
+            doc.querySelector('thead td') ||
+            doc.querySelector('tr:first-child th') ||
+            doc.querySelector('tr:first-child td');
+          if (headingCell) {
+            const text = headingCell.textContent.trim();
+            if (text) {
+              title = text;
+            }
+          }
+          const table = doc.querySelector('table');
+          if (!table) {
+            return null;
+          }
+          return {
+            title,
+            html: table.outerHTML
+          };
+        } catch (error) {
+          console.warn('表格内容解析失败', error);
+          return null;
+        }
+      }
+
+      function renderDetailsSection(product) {
+        const section = elements.sections.details;
+        const tabsContainer = elements.fields.detailsTabs;
+        const panel = elements.fields.detailsPanel;
+        if (!section || !tabsContainer || !panel) {
+          return;
+        }
+
+        if (!panel.id) {
+          panel.id = 'product-details-panel';
+        }
+        panel.tabIndex = 0;
+
+        const definitions = [
+          { key: 'table1', fallback: '参数详情' },
+          { key: 'table2', fallback: '更多参数' }
+        ];
+
+        const tabIdBase = 'product-details-tab-' + (product.id != null ? product.id : 'x');
+
+        const tables = definitions
+          .map((definition, index) => buildTableData(product[definition.key], definition.fallback, index))
+          .filter(Boolean);
+
+        if (!tables.length) {
+          section.hidden = true;
+          tabsContainer.innerHTML = '';
+          tabsContainer.setAttribute('aria-hidden', 'true');
+          panel.innerHTML = '';
+          panel.dataset.activeTab = '';
+          panel.removeAttribute('aria-labelledby');
+          tabsContainer.onkeydown = null;
+          return;
+        }
+
+        section.hidden = false;
+        tabsContainer.innerHTML = '';
+        panel.innerHTML = '';
+        tabsContainer.setAttribute('aria-hidden', 'false');
+        panel.dataset.activeTab = '';
+        panel.removeAttribute('aria-labelledby');
+
+        const buttons = [];
+
+        function activate(index, options = {}) {
+          const table = tables[index];
+          if (!table) {
+            return;
+          }
+          panel.innerHTML = table.html;
+          panel.dataset.activeTab = String(index);
+          const activeButton = buttons[index];
+          if (activeButton && activeButton.id) {
+            panel.setAttribute('aria-labelledby', activeButton.id);
+          } else {
+            panel.removeAttribute('aria-labelledby');
+          }
+          panel.scrollTop = 0;
+          buttons.forEach((button, buttonIndex) => {
+            const isActive = buttonIndex === index;
+            button.classList.toggle('details-tab--active', isActive);
+            button.setAttribute('aria-selected', String(isActive));
+            button.tabIndex = isActive ? 0 : -1;
+            if (isActive && options.focus) {
+              button.focus({ preventScroll: true });
+            }
+          });
+        }
+
+        tables.forEach((table, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'details-tab';
+          button.dataset.index = String(index);
+          button.textContent = table.title;
+          const tabId = tabIdBase + '-' + index;
+          button.id = tabId;
+          button.setAttribute('role', 'tab');
+          button.setAttribute('aria-controls', panel.id);
+          button.setAttribute('aria-selected', 'false');
+          button.tabIndex = -1;
+          button.addEventListener('click', () => activate(index));
+          buttons.push(button);
+          tabsContainer.appendChild(button);
+        });
+
+        if (!buttons.length) {
+          section.hidden = true;
+          panel.removeAttribute('aria-labelledby');
+          return;
+        }
+
+        activate(0);
+
+        tabsContainer.onkeydown = (event) => {
+          const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+          if (!keys.includes(event.key)) {
+            return;
+          }
+          event.preventDefault();
+          const currentIndex = buttons.findIndex((button) => button.classList.contains('details-tab--active'));
+          if (currentIndex === -1) {
+            return;
+          }
+          let nextIndex = currentIndex;
+          if (event.key === 'ArrowRight') {
+            nextIndex = (currentIndex + 1) % buttons.length;
+          } else if (event.key === 'ArrowLeft') {
+            nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+          } else if (event.key === 'Home') {
+            nextIndex = 0;
+          } else if (event.key === 'End') {
+            nextIndex = buttons.length - 1;
+          }
+          activate(nextIndex, { focus: true });
+        };
+      }
+
+      function renderBulletSection(sectionKey, titleValue, listValue, defaultTitle) {
+        const section = elements.sections[sectionKey];
+        const titleElement =
+          sectionKey === 'features' ? elements.fields.featuresTitle : elements.fields.scenariosTitle;
+        const listElement =
+          sectionKey === 'features' ? elements.fields.featuresList : elements.fields.scenariosList;
+        const items = parseLines(listValue);
+        const titleText = formatText(titleValue) || defaultTitle;
+        if (!section || !titleElement || !listElement) {
+          return;
+        }
+        if (!items.length) {
+          section.hidden = true;
+          listElement.innerHTML = '';
+          return;
+        }
+        section.hidden = false;
+        titleElement.textContent = titleText;
+        listElement.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        items.forEach((text) => {
+          const li = document.createElement('li');
+          li.textContent = text;
+          fragment.appendChild(li);
+        });
+        listElement.appendChild(fragment);
+      }
+
+      function renderExtraSection(product) {
+        const section = elements.sections.extraText;
+        const listElement = elements.fields.extraList;
+        if (!section || !listElement) {
+          return;
+        }
+        const extras = [product.A12, product['Unnamed:_17'], product['Unnamed:_18']]
+          .flatMap((value) => parseLines(value))
+          .filter(Boolean);
+        if (!extras.length) {
+          section.hidden = true;
+          listElement.innerHTML = '';
+          return;
+        }
+        section.hidden = false;
+        listElement.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        extras.forEach((text) => {
+          const li = document.createElement('li');
+          li.textContent = text;
+          fragment.appendChild(li);
+        });
+        listElement.appendChild(fragment);
+      }
+
+      function updateGalleryActive(src) {
+        const buttons = elements.fields.gallery.querySelectorAll('.gallery__item');
+        buttons.forEach((button) => {
+          button.classList.toggle('gallery__item--active', button.dataset.src === src);
+        });
+      }
+
+      function renderGallery(images, activeSrc) {
+        const gallery = elements.fields.gallery;
+        if (!gallery) {
+          return;
+        }
+        gallery.innerHTML = '';
+        if (images.length <= 1) {
+          gallery.hidden = true;
+          return;
+        }
+        gallery.hidden = false;
+        const fragment = document.createDocumentFragment();
+        images.forEach((src, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'gallery__item';
+          button.dataset.src = src;
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = '产品图库图像 ' + (index + 1);
+          img.loading = 'lazy';
+          button.appendChild(img);
+          button.addEventListener('click', () => {
+            elements.fields.heroImage.src = src;
+            updateGalleryActive(src);
+          });
+          fragment.appendChild(button);
+        });
+        gallery.appendChild(fragment);
+        updateGalleryActive(activeSrc || images[0]);
+      }
+
+      function updateActiveButtonStyles() {
+        const buttons = elements.list.querySelectorAll('.product-list__item');
+        buttons.forEach((button) => {
+          const buttonId = Number(button.dataset.id);
+          button.classList.toggle('product-list__item--active', buttonId === state.activeId);
+        });
+      }
+
+      function selectProduct(id) {
+        const targetId = Number(id);
+        const product = state.products.find((item) => Number(item.id) === targetId);
+        if (!product) {
+          return;
+        }
+        state.activeId = targetId;
+        elements.prompt.hidden = true;
+        elements.product.hidden = false;
+
+        const categoryLabel = resolveCategory(product);
+        elements.fields.category.textContent = categoryLabel;
+        elements.fields.category.hidden = !categoryLabel;
+
+        const code = formatText(product.sub);
+        elements.fields.code.textContent = code ? '产品型号：' + code : '';
+        elements.fields.code.hidden = !code;
+
+        const title = formatText(product.title) || '未命名产品';
+        elements.fields.title.textContent = title;
+
+        const desc = formatText(product.desc);
+        elements.fields.desc.textContent = desc || '暂无产品描述。';
+
+        const images = getImages(product);
+        const heroSrc = images[0] || placeholderImage;
+        elements.fields.heroImage.src = heroSrc;
+        elements.fields.heroImage.alt = title + ' 产品图片';
+
+        renderGallery(images, heroSrc);
+        renderBulletSection('features', product.A6, product.A7, '产品亮点');
+        renderBulletSection('scenarios', product.A9, product.A10, '应用场景');
+        renderDetailsSection(product);
+        renderExtraSection(product);
+
+        updateActiveButtonStyles();
+      }
+
+      function renderList() {
+        elements.list.innerHTML = '';
+        if (!state.filtered.length) {
+          elements.listEmpty.hidden = false;
+          return;
+        }
+        elements.listEmpty.hidden = true;
+        const fragment = document.createDocumentFragment();
+        let currentCategory = null;
+        state.filtered.forEach((product) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'product-list__item';
+          button.dataset.id = String(product.id);
+          const categoryLabel = resolveCategory(product);
+
+          if (state.activeCategory === allCategoriesLabel && categoryLabel !== currentCategory) {
+            currentCategory = categoryLabel;
+            const heading = document.createElement('div');
+            heading.className = 'product-list__group-title';
+            heading.textContent = categoryLabel;
+            heading.setAttribute('role', 'heading');
+            heading.setAttribute('aria-level', '3');
+            fragment.appendChild(heading);
+          }
+
+          const title = formatText(product.title) || '未命名产品';
+          const subtitle = formatText(product.sub) || (state.activeCategory === allCategoriesLabel ? '' : categoryLabel);
+          const desc = formatText(product.desc);
+          const excerpt = desc ? (desc.length > 70 ? desc.slice(0, 70) + '…' : desc) : '';
+
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'product-list__title';
+          titleSpan.textContent = title;
+          button.appendChild(titleSpan);
+
+          if (subtitle) {
+            const subtitleSpan = document.createElement('span');
+            subtitleSpan.className = 'product-list__subtitle';
+            subtitleSpan.textContent = subtitle;
+            button.appendChild(subtitleSpan);
+          }
+
+          if (excerpt) {
+            const excerptSpan = document.createElement('span');
+            excerptSpan.className = 'product-list__excerpt';
+            excerptSpan.textContent = excerpt;
+            button.appendChild(excerptSpan);
+          }
+
+          button.addEventListener('click', () => {
+            selectProduct(product.id);
+          });
+
+          fragment.appendChild(button);
+        });
+        elements.list.appendChild(fragment);
+        updateActiveButtonStyles();
+      }
+
+      function applyFilter(keyword) {
+        const value = keyword ? keyword.toLowerCase() : '';
+        const matchesCategory = (product) => {
+          if (state.activeCategory === allCategoriesLabel) {
+            return true;
+          }
+          return resolveCategory(product) === state.activeCategory;
+        };
+
+        const matchesKeyword = (product) => {
+          if (!value) {
+            return true;
+          }
+          const pool = [
+            product.title,
+            product.desc,
+            product.sub,
+            product.A6,
+            product.A7,
+            product.A9,
+            product.A10,
+            product[categoryFieldKey],
+            resolveCategory(product)
+          ];
+          return pool.some((item) => {
+            if (!item) {
+              return false;
+            }
+            return String(item).toLowerCase().includes(value);
+          });
+        };
+
+        state.filtered = state.products.filter((product) => matchesCategory(product) && matchesKeyword(product));
+
+        if (state.filtered.length > 1) {
+          state.filtered.sort((a, b) => {
+            const categoryA = resolveCategory(a);
+            const categoryB = resolveCategory(b);
+            if (state.activeCategory === allCategoriesLabel) {
+              const categoryCompare = zhCollator ? zhCollator.compare(categoryA, categoryB) : categoryA.localeCompare(categoryB);
+              if (categoryCompare !== 0) {
+                return categoryCompare;
+              }
+            }
+            const titleA = formatText(a.title);
+            const titleB = formatText(b.title);
+            if (zhCollator) {
+              const compare = zhCollator.compare(titleA, titleB);
+              if (compare !== 0) {
+                return compare;
+              }
+            }
+            return titleA.localeCompare(titleB);
+          });
+        }
+
+        renderList();
+        if (!state.filtered.length) {
+          state.activeId = null;
+          elements.product.hidden = true;
+          elements.prompt.hidden = false;
+          elements.prompt.textContent =
+            state.activeCategory === allCategoriesLabel
+              ? '暂无匹配的产品，请调整搜索条件。'
+              : `在分类「${state.activeCategory}」下暂无匹配的产品，请调整搜索条件。`;
+          return;
+        }
+        elements.prompt.textContent = defaultPromptText;
+        if (!state.filtered.some((item) => Number(item.id) === state.activeId)) {
+          selectProduct(state.filtered[0].id);
+        } else {
+          updateActiveButtonStyles();
+        }
+      }
+
+      function attachEvents() {
+        if (elements.search) {
+          elements.search.addEventListener('input', (event) => {
+            applyFilter(event.target.value.trim());
+          });
+        }
+      }
+
+      function loadData() {
+        fetch('__PS_PRODUCTS_ENDPOINT__', { cache: 'no-store' })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('请求失败：' + response.status);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const items = Array.isArray(data) ? data : [];
+            state.products = items.map((item, index) => {
+              const clone = Object.assign({}, item);
+              if (clone.id == null) {
+                clone.id = index + 1;
+              }
+              clone.id = Number(clone.id);
+              return clone;
+            });
+            elements.loading.hidden = true;
+            computeCategories();
+            applyFilter(elements.search ? elements.search.value.trim() : '');
+          })
+          .catch((error) => {
+            console.error(error);
+            elements.loading.hidden = true;
+            elements.error.hidden = false;
+            elements.prompt.hidden = false;
+            elements.prompt.textContent = '加载产品数据失败。';
+          });
+      }
+
+      attachEvents();
+      loadData();
+    })();
+  </script>
+</div>
