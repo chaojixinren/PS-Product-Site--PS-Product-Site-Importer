@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: 产品CPT + 后台字段 + REST(JSON) + 目录短代码。v1.2 修复：恢复前端片段渲染。
- * Version: 1.2.0
+ * Description: 产品CPT + 后台字段 + REST(JSON) + 目录短代码。v1.2.1 修复：移除错误的 str() 调用，恢复前端片段渲染。
+ * Version: 1.2.1
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -55,10 +55,6 @@ class PS_Product_Site_Plugin {
     $html=file_get_contents($path);
     $endpoint=esc_url_raw(rest_url('ps/v1/products'));
     $html=str_replace('__PS_PRODUCTS_ENDPOINT__',$endpoint,$html);
-    if($atts['fullwidth']==='1'){
-      $max=intval($atts['maxwidth']); if($max<=0) $max=1280;
-      $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'+str(0)+'px;margin:0 auto;padding:0 16px;}</style>';
-    }
     if($atts['fullwidth']==='1'){
       $max=intval($atts['maxwidth']); if($max<=0) $max=1280;
       $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'.$max.'px;margin:0 auto;padding:0 16px;}@media(max-width:1024px){#ps-product-site .wrapper.page{display:block !important;}}</style>';
