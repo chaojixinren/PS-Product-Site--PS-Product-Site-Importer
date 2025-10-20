@@ -2,8 +2,8 @@
     <?php
     /**
      * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
-     * Description: 产品CPT + 后台字段 + REST(JSON) + 目录短代码。v1.3.3：修复字符串拼接兼容问题；保留 iframe 隔离与高度修复。
-     * Version: 1.3.3
+     * Description: 产品CPT + 后台字段 + REST(JSON) + 目录短代码。v1.3.4：修复“仍请求 data.json”问题；预注入重写脚本，且资源中已替换为 REST 占位符。
+     * Version: 1.3.4
      * Author: 超級の新人
      */
     if (!defined('ABSPATH')) exit;
@@ -79,8 +79,16 @@
           ];
         } wp_reset_postdata(); return rest_ensure_response($items);
       }
+
+      private function inject_rewrite_js($endpoint, $id){
+        $e = esc_js($endpoint);
+        $iid = esc_js($id);
+        return '<script>(function(){var ENDPOINT=\"'.$e.'\";var IID=\"'.$iid.'\";function rw(u){try{if(typeof u===\"string\"&&u.indexOf(\"data.json\")!==-1){return ENDPOINT;} }catch(e){} return u;}var OF=window.fetch;if(OF){window.fetch=function(i,init){try{if(typeof i===\"string\"){i=rw(i);}else if(i&&i.url){i=new Request(rw(i.url),i);} }catch(e){} return OF.call(this,i,init);};}var XO=XMLHttpRequest&&XMLHttpRequest.prototype&&XMLHttpRequest.prototype.open; if(XO){XMLHttpRequest.prototype.open=function(m,u){arguments[1]=rw(u);return XO.apply(this,arguments);};}if(window.axios&&window.axios.get){var OG=window.axios.get;window.axios.get=function(u,c){return OG.call(this,rw(u),c);};}window.PS_PRODUCTS_ENDPOINT=ENDPOINT;})();</script>';
+      }
+
       function shortcode_catalog($atts=[]){
         $atts=shortcode_atts(['mode'=>'iframe','fullwidth'=>'0','maxwidth'=>'1280','minheight'=>'600'], $atts);
+
         if($atts['mode']==='iframe'){
           $id = 'ps_iframe_'.wp_rand(1000,9999);
           $src = add_query_arg('ps_catalog_iframe',$id, home_url('/'));
@@ -97,11 +105,14 @@
           $o .= $wrap_end;
           return $o;
         }
+
         $path=plugin_dir_path(__FILE__).'assets/product-site-fragment.html';
         if(!file_exists($path)) return '<p>前端模板缺失。</p>';
         $html=file_get_contents($path);
         $endpoint=esc_url_raw(rest_url('ps/v1/products'));
         $html=str_replace('__PS_PRODUCTS_ENDPOINT__',$endpoint,$html);
+        $inject = $this->inject_rewrite_js($endpoint, 'inline');
+        $html = $inject . $html;
         if($atts['fullwidth']==='1'){
           $max=intval($atts['maxwidth']); if($max<=0) $max=1280;
           $css='<style id="ps-product-site-fullwidth">.ps-edge-wide{width:100vw;margin-left:50%;transform:translateX(-50%);}#ps-product-site{max-width:'.$max.'px;margin:0 auto;padding:0 16px;}@media(max-width:1024px){#ps-product-site .wrapper.page{display:block !important;}}</style>';
@@ -109,6 +120,7 @@
         }
         return $html;
       }
+
       function maybe_render_iframe(){
         if(isset($_GET['ps_catalog_iframe'])){
           $id = sanitize_text_field($_GET['ps_catalog_iframe']);
@@ -121,11 +133,14 @@
           echo '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
           echo '<style>html,body{margin:0;padding:0;height:auto !important;overflow:hidden;}#ps-product-site{padding:0;margin:0}</style>';
           echo '</head><body>';
+          // IMPORTANT: inject rewrite JS BEFORE fragment so any early scripts use REST
+          echo $this->inject_rewrite_js($endpoint, $id);
           echo $html;
           echo '<script>(function(){var id="'.esc_js($id).'";var root=document.getElementById("ps-product-site")||document.body;var last=0;function h(){try{var r=root.getBoundingClientRect();var nh=Math.ceil(r.height)+2;if(Math.abs(nh-last)>1){last=nh;parent.postMessage({type:"ps-resize",id:id,h:nh},"*");}}catch(e){}}window.addEventListener("load",h);var ro=new ResizeObserver(function(){h()});ro.observe(root);var mo=new MutationObserver(function(){setTimeout(h,50)});mo.observe(root,{subtree:true,childList:true,attributes:true});setTimeout(h,300);})();</script>';
           echo '</body></html>'; exit;
         }
       }
+
       function on_activate(){ $this->register_cpt_tax(); flush_rewrite_rules(); if(!get_page_by_title('产品目录')){ wp_insert_post(['post_title'=>'产品目录','post_status'=>'publish','post_type'=>'page','post_content'=>'[product_catalog]']); } }
     }
     new PS_Product_Site_Plugin();
