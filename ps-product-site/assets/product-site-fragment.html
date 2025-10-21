@@ -115,8 +115,19 @@
     function showDetail(p){
       elHeroTitle.textContent = p.title||'';
       elHeroDesc.textContent = p.desc||'';
-      if(p.img1){ elHeroImg.src = p.img1; elHeroImg.style.display='block'; } else { elHeroImg.style.display='none'; }
+
+      // Fallback order: img1 -> A5 -> A8 -> A11 -> (hide)
+      const heroUrl = p.img1 || p.A5 || p.A8 || p.A11 || '';
+      if(heroUrl){
+        elHeroImg.src = heroUrl;
+        elHeroImg.style.display='block';
+      }else{
+        elHeroImg.removeAttribute('src');
+        elHeroImg.style.display='none';
+      }
+
       elHero.style.display = 'block';
+
       const has1 = !!(p.table1 && p.table1.trim());
       const has2 = !!(p.table2 && p.table2.trim());
       if(has1||has2){

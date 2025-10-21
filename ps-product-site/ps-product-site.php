@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.2：修复字符串拼接“+”为“.”导致的致命错误；界面为：搜索 + 横向产品卡 + 蓝色大卡片 + 表格双Tab；搜索覆盖表格文本；REST 兼容与 iframe 自适应。
- * Version: 1.4.2
+ * Description: v1.4.3：修复蓝色卡片右侧主图显示（按 img1→A5→A8→A11 顺序回退）；沿用 v1.4.2 的其它修复与特性。
+ * Version: 1.4.3
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -95,15 +95,15 @@ class PS_Product_Site_Plugin {
   }
 
   private function build_endpoints(){
-    $primary  = rest_url('ps/v1/products'); // /wp-json/ps/v1/products
-    $fallback = add_query_arg('rest_route', '/ps/v1/products', home_url('/')); // /?rest_route=/ps/v1/products
+    $primary  = rest_url('ps/v1/products');
+    $fallback = add_query_arg('rest_route', '/ps/v1/products', home_url('/'));
     return ['primary'=>$primary, 'fallback'=>$fallback];
   }
 
   private function inject_fetch_fallback_js($eps){
     $p = esc_js($eps['primary']);
     $f = esc_js($eps['fallback']);
-    return '<script>(function(){var EP_PRIMARY="'.$p.'";var EP_FALLBACK="'.$f.'";var _fetch=window.fetch;if(_fetch){window.fetch=function(i,init){function urlOf(x){if(typeof x==="string") return x; if(x&&x.url) return x.url; return "";}var u=urlOf(i); if(u.indexOf(EP_PRIMARY)===0){return _fetch(i,init).then(function(r){if(!r.ok){return _fetch(EP_FALLBACK,init);}return r;}).catch(function(){return _fetch(EP_FALLBACK,init);});} return _fetch(i,init);};}})();</script>';
+    return '<script>(function(){var EP_PRIMARY=\"'.$p.'\";var EP_FALLBACK=\"'.$f.'\";var _fetch=window.fetch;if(_fetch){window.fetch=function(i,init){function urlOf(x){if(typeof x===\"string\") return x; if(x&&x.url) return x.url; return \"\";}var u=urlOf(i); if(u.indexOf(EP_PRIMARY)===0){return _fetch(i,init).then(function(r){if(!r.ok){return _fetch(EP_FALLBACK,init);}return r;}).catch(function(){return _fetch(EP_FALLBACK,init);});} return _fetch(i,init);};}})();</script>';
   }
 
   function shortcode_catalog($atts=[]){
