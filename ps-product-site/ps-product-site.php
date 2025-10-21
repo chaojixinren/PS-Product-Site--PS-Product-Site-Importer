@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.1：移除“全部/未分类”分类Chip与分类徽标；保留并强化参数表（table1/table2）卡片，支持两标签切换；搜索可命中参数表文本。
- * Version: 1.4.1
+ * Description: v1.4.2：修复字符串拼接“+”为“.”导致的致命错误；界面为：搜索 + 横向产品卡 + 蓝色大卡片 + 表格双Tab；搜索覆盖表格文本；REST 兼容与 iframe 自适应。
+ * Version: 1.4.2
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -47,7 +47,7 @@ class PS_Product_Site_Plugin {
       'ps_table1'=>$this->field('ps_table1'),'ps_table2'=>$this->field('ps_table2'),
       'ps_extra_text'=>$this->field('ps_extra_text'),'ps_extra2'=>$this->field('ps_extra2'),'ps_extra3'=>$this->field('ps_extra3')
     ];
-    echo '<div class="ps-metabox"><p>提示：文章正文=desc，主图留空将回退到特色图像；table1/table2 可直接粘贴 <table> HTML。</p><table class="form-table">';
+    echo '<div class="ps-metabox"><p>提示：文章正文=desc，主图留空将回退到特色图像；table1/table2 可直接粘贴 &lt;table&gt; HTML。</p><table class="form-table">';
     echo '<tr><th>型号（sub）</th><td><input type="text" name="ps_sub" class="regular-text" value="'.esc_attr($m['ps_sub']).'"></td></tr>';
     foreach(['ps_img1'=>'主图（img1）','ps_img2'=>'图库2（A5）','ps_img3'=>'图库3（A8）','ps_img4'=>'图库4（A11）'] as $k=>$lab){
       echo '<tr><th>'.$lab.'</th><td><input type="text" name="'.$k.'" class="regular-text" value="'.esc_attr($m[$k]).'"> <button class="button ps-upload-btn">选择图片</button></td></tr>';
@@ -101,8 +101,9 @@ class PS_Product_Site_Plugin {
   }
 
   private function inject_fetch_fallback_js($eps){
-    $p = esc_js($eps['primary']); $f = esc_js($eps['fallback']);
-    return '<script>(function(){var EP_PRIMARY=\"'+$p+'\";var EP_FALLBACK=\"'+$f+'\";var _fetch=window.fetch;if(_fetch){window.fetch=function(i,init){function urlOf(x){if(typeof x===\"string\") return x; if(x&&x.url) return x.url; return \"\";}var u=urlOf(i); if(u.indexOf(EP_PRIMARY)===0){return _fetch(i,init).then(function(r){if(!r.ok){return _fetch(EP_FALLBACK,init);}return r;}).catch(function(){return _fetch(EP_FALLBACK,init);});} return _fetch(i,init);};}})();</script>';
+    $p = esc_js($eps['primary']);
+    $f = esc_js($eps['fallback']);
+    return '<script>(function(){var EP_PRIMARY="'.$p.'";var EP_FALLBACK="'.$f.'";var _fetch=window.fetch;if(_fetch){window.fetch=function(i,init){function urlOf(x){if(typeof x==="string") return x; if(x&&x.url) return x.url; return "";}var u=urlOf(i); if(u.indexOf(EP_PRIMARY)===0){return _fetch(i,init).then(function(r){if(!r.ok){return _fetch(EP_FALLBACK,init);}return r;}).catch(function(){return _fetch(EP_FALLBACK,init);});} return _fetch(i,init);};}})();</script>';
   }
 
   function shortcode_catalog($atts=[]){
@@ -118,8 +119,8 @@ class PS_Product_Site_Plugin {
       }
       $style = 'width:100%;border:0;display:block;min-height:'.intval($atts['minheight']).'px;';
       $o  = $wrap_start;
-      $o .= '<iframe class="ps-iframe" id="'+$id+'" src="'+esc_url($src)+'" style="'+$style+'" loading="lazy"></iframe>';
-      $o .= '<script>(function(){var id="'+$id+'";function onMsg(e){try{if(e.data&&e.data.type==="ps-resize"&&e.data.id===id){var f=document.getElementById("'+$id+'");if(f){var h=parseInt(e.data.h,10)||0;if(h>0&&h<200000){f.style.height=h+"px";}}}}catch(err){}}window.addEventListener("message",onMsg,false);})();</script>';
+      $o .= '<iframe class="ps-iframe" id="'.$id.'" src="'.esc_url($src).'" style="'.$style.'" loading="lazy"></iframe>';
+      $o .= '<script>(function(){var id="'.$id.'";function onMsg(e){try{if(e.data&&e.data.type==="ps-resize"&&e.data.id===id){var f=document.getElementById("'.$id.'");if(f){var h=parseInt(e.data.h,10)||0;if(h>0&&h<200000){f.style.height=h+"px";}}}}catch(err){}}window.addEventListener("message",onMsg,false);})();</script>';
       $o .= $wrap_end;
       return $o;
     }
