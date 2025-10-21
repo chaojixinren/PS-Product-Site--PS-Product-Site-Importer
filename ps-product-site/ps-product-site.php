@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.3：修复蓝色卡片右侧主图显示（按 img1→A5→A8→A11 顺序回退）；沿用 v1.4.2 的其它修复与特性。
- * Version: 1.4.3
+ * Description: v1.4.4：修复右侧主图不显示（预加载+绝对地址+no-referrer+多源回退）；其余与 v1.4.3 一致。
+ * Version: 1.4.4
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -54,7 +54,7 @@ class PS_Product_Site_Plugin {
     }
     echo '<tr><th colspan="2"><h3>亮点</h3></th></tr><tr><th>亮点标题（A6）</th><td><input type="text" name="ps_features_title" class="regular-text" value="'.esc_attr($m['ps_features_title']).'"></td></tr>';
     echo '<tr><th>亮点条目（A7，一行一条）</th><td><textarea name="ps_features_lines" class="large-text code" rows="5">'.esc_textarea($m['ps_features_lines']).'</textarea></td></tr>';
-    echo '<tr><th colspan="2"><h3>应用场景</h3></th></tr><tr><th>场景标题（A9）</th><td><input type="text" name="ps_scenarios_title" class="regular-text" value="'.esc_attr($m['ps_scenarios_title']).'"></td></tr>';
+    echo '<tr><th colspan="2"><h3>应用场景</h3></th></tr><tr><th>场景标题（A9）</th><td><input type="text" name="ps_scenarios_title" class="regular-text" value="'.esc_attr($m['ps_scenarios_title']).'</td></tr>';
     echo '<tr><th>场景条目（A10，一行一条）</th><td><textarea name="ps_scenarios_lines" class="large-text code" rows="5">'.esc_textarea($m['ps_scenarios_lines']).'</textarea></td></tr>';
     echo '<tr><th colspan="2"><h3>参数表（HTML）</h3></th></tr><tr><th>table1</th><td><textarea name="ps_table1" class="large-text code" rows="7">'.esc_textarea($m['ps_table1']).'</textarea></td></tr>';
     echo '<tr><th>table2</th><td><textarea name="ps_table2" class="large-text code" rows="7">'.esc_textarea($m['ps_table2']).'</textarea></td></tr>';
@@ -120,7 +120,7 @@ class PS_Product_Site_Plugin {
       $style = 'width:100%;border:0;display:block;min-height:'.intval($atts['minheight']).'px;';
       $o  = $wrap_start;
       $o .= '<iframe class="ps-iframe" id="'.$id.'" src="'.esc_url($src).'" style="'.$style.'" loading="lazy"></iframe>';
-      $o .= '<script>(function(){var id="'.$id.'";function onMsg(e){try{if(e.data&&e.data.type==="ps-resize"&&e.data.id===id){var f=document.getElementById("'.$id.'");if(f){var h=parseInt(e.data.h,10)||0;if(h>0&&h<200000){f.style.height=h+"px";}}}}catch(err){}}window.addEventListener("message",onMsg,false);})();</script>';
+      $o .= '<script>(function(){var id="'.$id.'";function onMsg(e){try{if(e.data&&e.data.type===\"ps-resize\"&&e.data.id===id){var f=document.getElementById(\"'.$id.'\");if(f){var h=parseInt(e.data.h,10)||0;if(h>0&&h<200000){f.style.height=h+\"px\";}}}}catch(err){}}window.addEventListener(\"message\",onMsg,false);})();</script>';
       $o .= $wrap_end;
       return $o;
     }
@@ -143,16 +143,16 @@ class PS_Product_Site_Plugin {
       $id = sanitize_text_field($_GET['ps_catalog_iframe']);
       status_header(200); nocache_headers(); header('Content-Type: text/html; charset=utf-8');
       $path=plugin_dir_path(__FILE__).'assets/product-site-fragment.html';
-      if(!file_exists($path)){ echo '<!doctype html><meta charset="utf-8"><p>模板缺失</p>'; exit; }
+      if(!file_exists($path)){ echo '<!doctype html><meta charset=\"utf-8\"><p>模板缺失</p>'; exit; }
       $html=file_get_contents($path);
       $eps=$this->build_endpoints();
       $html=str_replace('__PS_PRODUCTS_ENDPOINT__',$eps['primary'],$html);
-      echo '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
+      echo '<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">';
       echo '<style>html,body{margin:0;padding:0;height:auto !important;overflow:hidden;}#ps-product-site{padding:0;margin:0}</style>';
       echo '</head><body>';
       echo $this->inject_fetch_fallback_js($eps);
       echo $html;
-      echo '<script>(function(){var id="'.esc_js($id).'";var root=document.getElementById("ps-product-site")||document.body;var last=0;function h(){try{var r=root.getBoundingClientRect();var nh=Math.ceil(r.height)+2;if(Math.abs(nh-last)>1){last=nh;parent.postMessage({type:"ps-resize",id:id,h:nh},"*");}}catch(e){}}window.addEventListener("load",h);var ro=new ResizeObserver(function(){h()});ro.observe(root);var mo=new MutationObserver(function(){setTimeout(h,50)});mo.observe(root,{subtree:true,childList:true,attributes:true});setTimeout(h,300);})();</script>';
+      echo '<script>(function(){var id=\"'.esc_js($id).'\";var root=document.getElementById(\"ps-product-site\")||document.body;var last=0;function h(){try{var r=root.getBoundingClientRect();var nh=Math.ceil(r.height)+2;if(Math.abs(nh-last)>1){last=nh;parent.postMessage({type:\"ps-resize\",id:id,h:nh},\"*\");}}catch(e){}}window.addEventListener(\"load\",h);var ro=new ResizeObserver(function(){h()});ro.observe(root);var mo=new MutationObserver(function(){setTimeout(h,50)});mo.observe(root,{subtree:true,childList:true,attributes:true});setTimeout(h,300);})();</script>';
       echo '</body></html>'; exit;
     }
   }
@@ -160,7 +160,7 @@ class PS_Product_Site_Plugin {
   function on_activate(){
     $this->register_cpt_tax(); flush_rewrite_rules();
     if(!get_page_by_title('产品目录')){
-      wp_insert_post(['post_title'=>'产品目录','post_status'=>'publish','post_type'=>'page','post_content'=>'[product_catalog fullwidth="1" maxwidth="1280"]']);
+      wp_insert_post(['post_title'=>'产品目录','post_status'=>'publish','post_type'=>'page','post_content'=>'[product_catalog fullwidth=\"1\" maxwidth=\"1280\"]']);
     }
   }
 }

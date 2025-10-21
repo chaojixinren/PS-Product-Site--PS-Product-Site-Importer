@@ -21,6 +21,7 @@
     .ps-hero-img img { max-width: 100%; height: auto; display:block; }
     .ps-spec { margin-top: 18px; background: #0f3a86; color:#fff; border-radius: 20px; padding: 16px; }
     .ps-tabs { display:flex; gap:10px; padding: 6px; }
+    .ps-tab { padding: 8px 14px; border-radius: 999px; background:#1.5em; }
     .ps-tab { padding: 8px 14px; border-radius: 999px; background:#1e40af; color:#dbeafe; cursor:pointer; font-weight:700; }
     .ps-tab.active { background:#e6efff; color:#0f3a86; }
     .ps-spec-body { background:#fff; border-radius: 14px; padding: 12px; }
@@ -50,7 +51,7 @@
           <p id="ps-hero-desc">Desc</p>
         </div>
         <div class="ps-hero-img">
-          <img id="ps-hero-img" alt="product image" onerror="this.style.display='none'">
+          <img id="ps-hero-img" alt="product image" referrerpolicy="no-referrer">
         </div>
       </div>
     </div>
@@ -112,20 +113,34 @@
       };
     }
 
+    function toAbs(u){
+      if(!u) return '';
+      if(/^https?:\\/\\//i.test(u) || u.startsWith('//')) return u;
+      if(u.startsWith('/')) return window.location.origin + u;
+      // relative path -> join with current path root
+      try {
+        return new URL(u, window.location.origin).toString();
+      } catch(e){ return u; }
+    }
+
+    function preloadAndShow(urls){
+      const list = urls.map(toAbs).filter(Boolean);
+      elHeroImg.style.display='none';
+      const tryOne = (i)=>{
+        if(i>=list.length){ elHeroImg.removeAttribute('src'); return; }
+        const test = new Image();
+        test.referrerPolicy = 'no-referrer';
+        test.onload = ()=>{ elHeroImg.src = test.src; elHeroImg.style.display='block'; };
+        test.onerror = ()=>{ tryOne(i+1); };
+        test.src = list[i];
+      };
+      tryOne(0);
+    }
+
     function showDetail(p){
       elHeroTitle.textContent = p.title||'';
       elHeroDesc.textContent = p.desc||'';
-
-      // Fallback order: img1 -> A5 -> A8 -> A11 -> (hide)
-      const heroUrl = p.img1 || p.A5 || p.A8 || p.A11 || '';
-      if(heroUrl){
-        elHeroImg.src = heroUrl;
-        elHeroImg.style.display='block';
-      }else{
-        elHeroImg.removeAttribute('src');
-        elHeroImg.style.display='none';
-      }
-
+      preloadAndShow([p.img1, p.A5, p.A8, p.A11]);
       elHero.style.display = 'block';
 
       const has1 = !!(p.table1 && p.table1.trim());
