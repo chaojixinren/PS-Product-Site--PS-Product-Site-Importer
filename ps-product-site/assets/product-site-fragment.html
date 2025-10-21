@@ -21,7 +21,6 @@
     .ps-hero-img img { max-width: 100%; height: auto; display:block; }
     .ps-spec { margin-top: 18px; background: #0f3a86; color:#fff; border-radius: 20px; padding: 16px; }
     .ps-tabs { display:flex; gap:10px; padding: 6px; }
-    .ps-tab { padding: 8px 14px; border-radius: 999px; background:#1.5em; }
     .ps-tab { padding: 8px 14px; border-radius: 999px; background:#1e40af; color:#dbeafe; cursor:pointer; font-weight:700; }
     .ps-tab.active { background:#e6efff; color:#0f3a86; }
     .ps-spec-body { background:#fff; border-radius: 14px; padding: 12px; }
@@ -31,6 +30,19 @@
     .skeleton { background: linear-gradient(90deg, rgba(0,0,0,.06) 25%, rgba(0,0,0,.12) 37%, rgba(0,0,0,.06) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
     @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
     @media (max-width: 900px){ .ps-hero-inner { grid-template-columns: 1fr; } }
+
+  /* Applications & Product Portfolio sections (v1.4.4) */
+  .ps-section{margin-top:28px}
+  .ps-split{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
+  .ps-split h3{font-size:28px;margin:0 0 14px}
+  .ps-dotlist{list-style:none;margin:0;padding:0}
+  .ps-dotlist li{line-height:1.9;color:#1f2937;position:relative;padding-left:14px}
+  .ps-dotlist li::before{content:"·";position:absolute;left:0;top:0}
+  .ps-split-img{border-radius:24px;overflow:hidden;background:#f6f7fb}
+  .ps-split-img img{display:block;width:100%;height:auto}
+  .ps-split-img.dark{background:linear-gradient(145deg,#0f2d66,#0b1d46)}
+  @media (max-width:900px){ .ps-split{grid-template-columns:1fr} }
+
   </style>
 
   <div class="ps-container">
@@ -51,7 +63,7 @@
           <p id="ps-hero-desc">Desc</p>
         </div>
         <div class="ps-hero-img">
-          <img id="ps-hero-img" alt="product image" referrerpolicy="no-referrer">
+          <img id="ps-hero-img" alt="product image" onerror="this.style.display='none'">
         </div>
       </div>
     </div>
@@ -65,6 +77,27 @@
         <div id="ps-spec1"></div>
         <div id="ps-spec2" style="display:none;"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- v1.4.4: Applications & Product Portfolio -->
+  <div id="ps-app" class="ps-section" style="display:none;">
+    <div class="ps-split">
+      <div>
+        <h3 id="ps-app-title">Applications</h3>
+        <ul id="ps-app-list" class="ps-dotlist"></ul>
+      </div>
+      <div class="ps-split-img"><img id="ps-app-img" alt=""></div>
+    </div>
+  </div>
+
+  <div id="ps-portfolio" class="ps-section" style="display:none;">
+    <div class="ps-split">
+      <div>
+        <h3 id="ps-portfolio-title">Product Portfolio</h3>
+        <ul id="ps-portfolio-list" class="ps-dotlist"></ul>
+      </div>
+      <div class="ps-split-img dark"><img id="ps-portfolio-img" alt=""></div>
     </div>
   </div>
 
@@ -83,6 +116,15 @@
     const elSpec2 = document.getElementById('ps-spec2');
     const elTab1 = document.getElementById('ps-tab1');
     const elTab2 = document.getElementById('ps-tab2');
+
+    const elApp=document.getElementById('ps-app');
+    const elAppTitle=document.getElementById('ps-app-title');
+    const elAppList=document.getElementById('ps-app-list');
+    const elAppImg=document.getElementById('ps-app-img');
+    const elPf=document.getElementById('ps-portfolio');
+    const elPfTitle=document.getElementById('ps-portfolio-title');
+    const elPfList=document.getElementById('ps-portfolio-list');
+    const elPfImg=document.getElementById('ps-portfolio-img');
 
     const state = { products:[], view:[], q:'' };
 
@@ -113,34 +155,20 @@
       };
     }
 
-    function toAbs(u){
-      if(!u) return '';
-      if(/^https?:\\/\\//i.test(u) || u.startsWith('//')) return u;
-      if(u.startsWith('/')) return window.location.origin + u;
-      // relative path -> join with current path root
-      try {
-        return new URL(u, window.location.origin).toString();
-      } catch(e){ return u; }
-    }
-
-    function preloadAndShow(urls){
-      const list = urls.map(toAbs).filter(Boolean);
-      elHeroImg.style.display='none';
-      const tryOne = (i)=>{
-        if(i>=list.length){ elHeroImg.removeAttribute('src'); return; }
-        const test = new Image();
-        test.referrerPolicy = 'no-referrer';
-        test.onload = ()=>{ elHeroImg.src = test.src; elHeroImg.style.display='block'; };
-        test.onerror = ()=>{ tryOne(i+1); };
-        test.src = list[i];
-      };
-      tryOne(0);
-    }
-
     function showDetail(p){
       elHeroTitle.textContent = p.title||'';
       elHeroDesc.textContent = p.desc||'';
-      preloadAndShow([p.img1, p.A5, p.A8, p.A11]);
+
+      // Fallback order: img1 -> A5 -> A8 -> A11 -> (hide)
+      const heroUrl = p.img1 || p.A5 || p.A8 || p.A11 || '';
+      if(heroUrl){
+        elHeroImg.src = heroUrl;
+        elHeroImg.style.display='block';
+      }else{
+        elHeroImg.removeAttribute('src');
+        elHeroImg.style.display='none';
+      }
+
       elHero.style.display = 'block';
 
       const has1 = !!(p.table1 && p.table1.trim());
@@ -153,6 +181,38 @@
       }else{
         elSpec.style.display='none';
       }
+
+      // v1.4.4 Applications (A6/A7) + image (A8 -> A5 -> img1 -> A11)
+      (function(){
+        const title = (p.A6||'').trim();
+        const lines = (p.A7||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        const imgUrl = p.A8 || p.A5 || p.img1 || p.A11 || '';
+        if(title || lines.length || imgUrl){
+          elApp.style.display='block';
+          elAppTitle.textContent = title || 'Applications';
+          elAppList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+          if(imgUrl){ elAppImg.src = imgUrl; elAppImg.style.display='block'; }
+          else { elAppImg.removeAttribute('src'); elAppImg.style.display='none'; }
+        }else{
+          elApp.style.display='none';
+        }
+      })();
+
+      // v1.4.4 Product Portfolio (A9/A10) + image (A11 -> A8 -> A5 -> img1)
+      (function(){
+        const title = (p.A9||'').trim();
+        const lines = (p.A10||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        const imgUrl = p.A11 || p.A8 || p.A5 || p.img1 || '';
+        if(title || lines.length || imgUrl){
+          elPf.style.display='block';
+          elPfTitle.textContent = title || 'Product Portfolio';
+          elPfList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+          if(imgUrl){ elPfImg.src = imgUrl; elPfImg.style.display='block'; }
+          else { elPfImg.removeAttribute('src'); elPfImg.style.display='none'; }
+        }else{
+          elPf.style.display='none';
+        }
+      })();
       if(window.parent){ setTimeout(()=>{ try{ parent.postMessage({type:'ps-resize',id:'inline',h:document.body.scrollHeight},'*'); }catch(e){} }, 60); }
     }
 
