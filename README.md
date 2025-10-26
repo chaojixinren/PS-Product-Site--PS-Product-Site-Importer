@@ -109,6 +109,7 @@
 ---
 
 ## 🗒️ 版本摘要
+* **v1.5.0**：修复404问题，自动搜索包含product_catalog短代码的页面
 * **v1.4.9**：修复带product参数URL的404问题，自动识别并加载正确的WordPress页面
 * **v1.4.8**：修复iframe模式下URL参数传递问题，支持?product=xxx参数在iframe中正确工作
 * **v1.4.7**：新增URL参数自动搜索功能，支持?product=xxx参数直接搜索并显示产品

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.9：修复带product参数URL的404问题，自动识别并加载正确的WordPress页面；
- * Version: 1.4.9
+ * Description: v1.5.0：修复404问题，自动搜索包含product_catalog短代码的页面；
+ * Version: 1.5.0
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -18,9 +18,38 @@ class PS_Product_Site_Plugin {
     add_action('rest_api_init',[$this,'register_rest']);
     add_shortcode('product_catalog',[$this,'shortcode_catalog']);
     add_action('template_redirect',[$this,'maybe_render_iframe'],1);
-    add_action('template_redirect',[$this,'handle_product_param_404'],0);
-    add_filter('template_include',[$this,'prevent_404_for_product_param'],999);
+    add_action('wp_enqueue_scripts',[$this,'enqueue_client_redirect'],999);
     register_activation_hook(__FILE__,[$this,'on_activate']);
+  }
+  
+  function enqueue_client_redirect(){
+    if(isset($_GET['product']) && is_404()){
+      // 获取不带product参数的当前URL路径
+      $current_uri = $_SERVER['REQUEST_URI'];
+      $path = parse_url($current_uri, PHP_URL_PATH);
+      
+      // 构建正确的URL
+      $clean_url = home_url($path);
+      
+      // 输出重定向脚本
+      wp_add_inline_script('jquery', '
+        (function(){
+          if(location.search.indexOf("product=") !== -1){
+            var cleanPath = "'.esc_js($path).'";
+            if(cleanPath && cleanPath !== location.pathname){
+              // 如果路径不匹配，尝试跳转到页面目录首页
+              var possibleUrls = ["'.esc_js($path).'", "'.esc_js(home_url('/')).'"];
+              for(var i = 0; i < possibleUrls.length; i++){
+                if(i === 0 || true){
+                  location.href = possibleUrls[i] + location.search;
+                  return;
+                }
+              }
+            }
+          }
+        })();
+      ');
+    }
   }
 
   function register_cpt_tax(){
@@ -110,6 +139,27 @@ class PS_Product_Site_Plugin {
 
   function shortcode_catalog($atts=[]){
     $atts=shortcode_atts(['mode'=>'iframe','fullwidth'=>'0','maxwidth'=>'1280','minheight'=>'600'], $atts);
+    
+    // 添加客户端重定向处理
+    $o = '';
+    if(isset($_GET['product'])){
+      $o .= '<script>
+        (function(){
+          // 如果当前URL包含product参数但被判定为404，尝试重定向
+          var urlParams = new URLSearchParams(location.search);
+          if(urlParams.has("product") && document.querySelector(".ps-pill") === null){
+            // 等待一小段时间，然后尝试在不带参数的URL上加载
+            setTimeout(function(){
+              var cleanUrl = location.protocol + "//" + location.host + location.pathname;
+              if(cleanUrl !== location.href){
+                location.href = cleanUrl + "?product=" + encodeURIComponent(urlParams.get("product"));
+              }
+            }, 100);
+          }
+        })();
+      </script>';
+    }
+    
     if($atts['mode']==='iframe'){
       $id = 'ps_iframe_'.wp_rand(1000,9999);
       // 将当前页面的URL参数传递给iframe
@@ -125,7 +175,7 @@ class PS_Product_Site_Plugin {
         $wrap_end = '</div>';
       }
       $style = 'width:100%;border:0;display:block;min-height:'.intval($atts['minheight']).'px;';
-      $o  = $wrap_start;
+      $o  .= $wrap_start;
       $o .= '<iframe class="ps-iframe" id="'.$id.'" src="'.esc_url($src).'" style="'.$style.'" loading="lazy"></iframe>';
       $o .= '<script>(function(){var id="'.$id.'";function onMsg(e){try{if(e.data&&e.data.type==="ps-resize"&&e.data.id===id){var f=document.getElementById("'.$id.'");if(f){var h=parseInt(e.data.h,10)||0;if(h>0&&h<200000){f.style.height=h+"px";}}}}catch(err){}}window.addEventListener("message",onMsg,false);})();</script>';
       $o .= $wrap_end;
@@ -196,31 +246,50 @@ class PS_Product_Site_Plugin {
   function prevent_404_for_product_param($template){
     if(isset($_GET['product']) && is_404()){
       global $wp_query;
-      $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-      $parts = explode('/', trim($request_uri, '/'));
-      $possible_slugs = [];
-      for($i = count($parts) - 1; $i >= 0; $i--){
-        if(!empty($parts[$i])){
-          $possible_slugs[] = implode('/', array_slice($parts, $i));
+      
+      // 获取所有页面并查找包含 [product_catalog] 短代码的页面
+      $query = new WP_Query([
+        'post_type' => 'page',
+        'post_status' => 'publish',
+        'posts_per_page' => -1
+      ]);
+      
+      $target_page = null;
+      
+      if($query->have_posts()){
+        // 遍历所有页面，查找包含 [product_catalog] 短代码的页面
+        while($query->have_posts()){
+          $query->the_post();
+          $post = get_post();
+          $content = $post->post_content;
+          
+          // 检查是否包含 product_catalog 短代码
+          if(strpos($content, '[product_catalog') !== false){
+            $target_page = $post;
+            break;
+          }
         }
-      }
-      foreach($possible_slugs as $slug){
-        $page = get_page_by_path($slug);
-        if($page && $page->post_status === 'publish'){
+        $query->reset_postdata();
+        
+        // 如果找到了目标页面
+        if($target_page){
           $wp_query->is_404 = false;
           $wp_query->is_page = true;
           $wp_query->is_singular = true;
-          $wp_query->queried_object = $page;
-          $wp_query->queried_object_id = $page->ID;
-          $wp_query->posts = [$page];
+          $wp_query->queried_object = $target_page;
+          $wp_query->queried_object_id = $target_page->ID;
+          $wp_query->posts = [$target_page];
           $wp_query->post_count = 1;
           $wp_query->max_num_pages = 1;
           $wp_query->found_posts = 1;
+          
           global $post;
-          $post = $page;
+          $post = $target_page;
           setup_postdata($post);
+          
           status_header(200);
-          // 返回合适的模板，优先使用主题的页面模板
+          
+          // 返回合适的模板
           $page_template = get_page_template();
           if($page_template && file_exists($page_template)){
             return $page_template;
@@ -229,7 +298,6 @@ class PS_Product_Site_Plugin {
           if($singular_template && file_exists($singular_template)){
             return $singular_template;
           }
-          // 最后的回退：返回 index.php
           $index_template = get_query_template('index');
           return $index_template ?: $template;
         }
