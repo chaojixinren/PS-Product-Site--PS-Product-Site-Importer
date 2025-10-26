@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.7：新增URL参数自动搜索功能，支持?product=xxx参数直接搜索并显示产品；
- * Version: 1.4.7
+ * Description: v1.4.8：修复iframe模式下URL参数传递问题，支持?product=xxx参数在iframe中正确工作；
+ * Version: 1.4.8
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -110,7 +110,12 @@ class PS_Product_Site_Plugin {
     $atts=shortcode_atts(['mode'=>'iframe','fullwidth'=>'0','maxwidth'=>'1280','minheight'=>'600'], $atts);
     if($atts['mode']==='iframe'){
       $id = 'ps_iframe_'.wp_rand(1000,9999);
-      $src = add_query_arg('ps_catalog_iframe',$id, home_url('/'));
+      // 将当前页面的URL参数传递给iframe
+      $src = home_url('/');
+      if(isset($_GET['product'])){
+        $src = add_query_arg('product', sanitize_text_field($_GET['product']), $src);
+      }
+      $src = add_query_arg('ps_catalog_iframe',$id, $src);
       $wrap_start=''; $wrap_end='';
       if($atts['fullwidth']==='1'){
         $max = intval($atts['maxwidth']); if($max<=0) $max=1280;
