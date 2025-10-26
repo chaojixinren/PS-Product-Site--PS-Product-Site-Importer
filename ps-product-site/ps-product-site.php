@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.6：新增桌面端悬停卡片动画效果，移动端保持列表布局；
- * Version: 1.4.6
+ * Description: v1.4.7：新增URL参数自动搜索功能，支持?product=xxx参数直接搜索并显示产品；
+ * Version: 1.4.7
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;

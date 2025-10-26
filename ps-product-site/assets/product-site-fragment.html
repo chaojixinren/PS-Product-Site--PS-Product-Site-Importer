@@ -48,12 +48,12 @@
   .ps-card{position:relative;height:300px;border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .3s ease}
   .ps-card:hover{transform:translateY(-4px)}
   .ps-card-bg{position:absolute;top:0;left:0;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
-  .ps-card-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);padding:24px;transform:translateY(100%);transition:transform .3s ease;backdrop-filter:blur(10px)}
+  .ps-card-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,0.12);padding:24px;transform:translateY(100%);transition:transform .3s ease;backdrop-filter:blur(1px);text-align:center}
   .ps-card:hover .ps-card-overlay{transform:translateY(0)}
-  .ps-card-overlay h3{font-size:24px;font-weight:700;color:#1f2937;margin:0 0 16px}
-  .ps-card-list{list-style:none;margin:0;padding:0}
-  .ps-card-list li{line-height:1.6;color:#374151;margin-bottom:8px;position:relative;padding-left:16px}
-  .ps-card-list li::before{content:"•";position:absolute;left:0;top:0;color:#6b7280}
+  .ps-card-overlay h3{font-size:24px;font-weight:700;color:#ffffff;margin:0 0 16px}
+  .ps-card-list{list-style:none;margin:0 auto;padding:0;text-align:left;width:max-content}
+  .ps-card-list li{line-height:1.6;color:#ffffff;margin-bottom:8px;position:relative;padding-left:16px}
+  .ps-card-list li::before{content:"•";position:absolute;left:0;top:0;color:#ffffff}
 
   /* 欢迎引导区域样式 */
   .ps-welcome{background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);border-radius:24px;padding:64px 48px;margin:48px 0;text-align:center;min-height:400px;display:flex;align-items:center;justify-content:center}
@@ -288,26 +288,22 @@
         const title = (p.A6||'').trim();
         const lines = (p.A7||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
         const imgUrl = p.A8 || p.A5 || p.img1 || p.A11 || '';
-        if(title || lines.length || imgUrl){
-          // 填充移动端列表布局内容
-          elAppTitle.textContent = title || 'Applications';
-          elAppList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
-          if(imgUrl){ elAppImg.src = imgUrl; elAppImg.style.display='block'; }
-          else { elAppImg.removeAttribute('src'); elAppImg.style.display='none'; }
-          
-          // 填充桌面端卡片布局内容
-          elAppCardTitle.textContent = title || 'Applications';
-          elAppCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
-          if(p.A8){ elAppBg.style.backgroundImage = 'url('+p.A8+')'; }
-          else { elAppBg.style.backgroundImage = ''; }
-          
-          // 显示容器（CSS媒体查询会控制具体显示哪个）
-          elApp.style.display='block';
-          elHoverCards.style.display='grid';
-        }else{
-          elApp.style.display='none';
-          elHoverCards.style.display='none';
-        }
+        
+        // 填充移动端列表布局内容
+        elAppTitle.textContent = title || 'Applications';
+        elAppList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+        if(imgUrl){ elAppImg.src = imgUrl; elAppImg.style.display='block'; }
+        else { elAppImg.removeAttribute('src'); elAppImg.style.display='none'; }
+        
+        // 填充桌面端卡片布局内容
+        elAppCardTitle.textContent = title || 'Applications';
+        elAppCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+        if(p.A8){ elAppBg.style.backgroundImage = 'url('+p.A8+')'; }
+        else { elAppBg.style.backgroundImage = ''; }
+        
+        // 始终显示容器（CSS媒体查询会控制具体显示哪个）
+        elApp.style.display='block';
+        elHoverCards.style.display='grid';
       })();
 
       // v1.4.6 Product Portfolio (A9/A10) + image (A11) with hover cards
@@ -315,26 +311,22 @@
         const title = (p.A9||'').trim();
         const lines = (p.A10||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
         const imgUrl = p.A11 || p.A8 || p.A5 || p.img1 || '';
-        if(title || lines.length || imgUrl){
-          // 填充移动端列表布局内容
-          elPfTitle.textContent = title || 'Product Portfolio';
-          elPfList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
-          if(imgUrl){ elPfImg.src = imgUrl; elPfImg.style.display='block'; }
-          else { elPfImg.removeAttribute('src'); elPfImg.style.display='none'; }
-          
-          // 填充桌面端卡片布局内容
-          elPfCardTitle.textContent = title || 'Product Portfolio';
-          elPfCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
-          if(p.A11){ elPfBg.style.backgroundImage = 'url('+p.A11+')'; }
-          else { elPfBg.style.backgroundImage = ''; }
-          
-          // 显示容器（CSS媒体查询会控制具体显示哪个）
-          elPf.style.display='block';
-          elHoverCards.style.display='grid';
-        }else{
-          elPf.style.display='none';
-          elHoverCards.style.display='none';
-        }
+        
+        // 填充移动端列表布局内容
+        elPfTitle.textContent = title || 'Product Portfolio';
+        elPfList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+        if(imgUrl){ elPfImg.src = imgUrl; elPfImg.style.display='block'; }
+        else { elPfImg.removeAttribute('src'); elPfImg.style.display='none'; }
+        
+        // 填充桌面端卡片布局内容
+        elPfCardTitle.textContent = title || 'Product Portfolio';
+        elPfCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+        if(p.A11){ elPfBg.style.backgroundImage = 'url('+p.A11+')'; }
+        else { elPfBg.style.backgroundImage = ''; }
+        
+        // 始终显示容器（CSS媒体查询会控制具体显示哪个）
+        elPf.style.display='block';
+        elHoverCards.style.display='grid';
       })();
       if(window.parent){ setTimeout(()=>{ try{ parent.postMessage({type:'ps-resize',id:'inline',h:document.body.scrollHeight},'*'); }catch(e){} }, 60); }
     }
@@ -382,14 +374,37 @@
     let t; elSearch.addEventListener('input',()=>{ clearTimeout(t); t=setTimeout(()=>{ state.q = elSearch.value||''; filterAndRender(); },200); });
     window.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); elSearch.focus(); } });
 
+    function getUrlParam(name){
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
     function fetchProducts(){ return fetch(ENDPOINT,{credentials:'same-origin'}).then(r=>r.json()); }
 
     fetchProducts().then(list=>{
       state.products = Array.isArray(list)? list: [];
       indexProducts(state.products);
-      // 初始加载时显示欢迎区域，隐藏产品列表
-      elStrip.style.display = 'none';
-      elWelcome.style.display = 'block';
+      
+      // 检查URL参数
+      const productParam = getUrlParam('product');
+      if(productParam && productParam.trim()){
+        // 解码URL编码的字符（处理+、%20等）并去除首尾空格
+        const decoded = decodeURIComponent(productParam.trim());
+        // 设置搜索框值
+        elSearch.value = decoded;
+        state.q = decoded;
+        // 执行搜索并显示结果
+        filterAndRender();
+      } else {
+        // 初始加载时显示欢迎区域，隐藏所有产品相关区域
+        elStrip.style.display = 'none';
+        elHero.style.display = 'none';
+        elSpec.style.display = 'none';
+        elApp.style.display = 'none';
+        elPf.style.display = 'none';
+        elHoverCards.style.display = 'none';
+        elWelcome.style.display = 'block';
+      }
     }).catch(err=>{ elStrip.innerHTML='<div style="color:#ef4444">数据加载失败</div>'; console.error(err); });
   })();
   </script>
