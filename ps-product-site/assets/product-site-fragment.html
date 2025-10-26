@@ -31,7 +31,7 @@
     @keyframes shimmer { 0%{background-position: 100% 0} 100%{background-position: -100% 0} }
     @media (max-width: 900px){ .ps-hero-inner { grid-template-columns: 1fr; } }
 
-  /* Applications & Product Portfolio sections (v1.4.4) */
+  /* Applications & Product Portfolio sections (v1.4.6) */
   .ps-section{margin-top:28px}
   .ps-split{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
   .ps-split h3{font-size:28px;margin:0 0 14px}
@@ -42,6 +42,18 @@
   .ps-split-img img{display:block;width:100%;height:auto}
   .ps-split-img.dark{background:linear-gradient(145deg,#0f2d66,#0b1d46)}
   @media (max-width:900px){ .ps-split{grid-template-columns:1fr} }
+
+  /* 桌面端悬停卡片样式 (v1.4.6) */
+  .ps-hover-cards{display:none;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+  .ps-card{position:relative;height:300px;border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .3s ease}
+  .ps-card:hover{transform:translateY(-4px)}
+  .ps-card-bg{position:absolute;top:0;left:0;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat}
+  .ps-card-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);padding:24px;transform:translateY(100%);transition:transform .3s ease;backdrop-filter:blur(10px)}
+  .ps-card:hover .ps-card-overlay{transform:translateY(0)}
+  .ps-card-overlay h3{font-size:24px;font-weight:700;color:#1f2937;margin:0 0 16px}
+  .ps-card-list{list-style:none;margin:0;padding:0}
+  .ps-card-list li{line-height:1.6;color:#374151;margin-bottom:8px;position:relative;padding-left:16px}
+  .ps-card-list li::before{content:"•";position:absolute;left:0;top:0;color:#6b7280}
 
   /* 欢迎引导区域样式 */
   .ps-welcome{background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);border-radius:24px;padding:64px 48px;margin:48px 0;text-align:center;min-height:400px;display:flex;align-items:center;justify-content:center}
@@ -54,6 +66,20 @@
   .ps-feature-icon{font-size:32px}
   .ps-feature-item span:last-child{font-size:16px;color:#475569;font-weight:600}
   
+
+  /* 响应式媒体查询 (v1.4.6) */
+  @media (min-width: 901px) {
+    .ps-hover-cards { display: grid !important; }
+    .ps-section { display: none !important; }
+    #ps-app { display: none !important; }
+    #ps-portfolio { display: none !important; }
+  }
+  @media (max-width: 900px) {
+    .ps-hover-cards { display: none !important; }
+    .ps-section { display: block !important; }
+    #ps-app { display: block !important; }
+    #ps-portfolio { display: block !important; }
+  }
 
   @media (max-width:600px){ 
     .ps-welcome{padding:48px 24px;min-height:350px} 
@@ -121,7 +147,26 @@
     </div>
   </div>
 
-  <!-- v1.4.4: Applications & Product Portfolio -->
+  <!-- v1.4.6: Applications & Product Portfolio with Hover Cards -->
+  <!-- 桌面端悬停卡片布局 -->
+  <div id="ps-hover-cards" class="ps-hover-cards" style="display:none;">
+    <div class="ps-card ps-app-card">
+      <div class="ps-card-bg" id="ps-app-bg"></div>
+      <div class="ps-card-overlay">
+        <h3 id="ps-app-card-title">Applications</h3>
+        <ul id="ps-app-card-list" class="ps-card-list"></ul>
+      </div>
+    </div>
+    <div class="ps-card ps-portfolio-card">
+      <div class="ps-card-bg" id="ps-portfolio-bg"></div>
+      <div class="ps-card-overlay">
+        <h3 id="ps-portfolio-card-title">Product Portfolio</h3>
+        <ul id="ps-portfolio-card-list" class="ps-card-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 移动端列表布局 -->
   <div id="ps-app" class="ps-section" style="display:none;">
     <div class="ps-split">
       <div>
@@ -167,6 +212,15 @@
     const elPfTitle=document.getElementById('ps-portfolio-title');
     const elPfList=document.getElementById('ps-portfolio-list');
     const elPfImg=document.getElementById('ps-portfolio-img');
+
+    // 桌面端卡片元素
+    const elHoverCards=document.getElementById('ps-hover-cards');
+    const elAppCardTitle=document.getElementById('ps-app-card-title');
+    const elAppCardList=document.getElementById('ps-app-card-list');
+    const elAppBg=document.getElementById('ps-app-bg');
+    const elPfCardTitle=document.getElementById('ps-portfolio-card-title');
+    const elPfCardList=document.getElementById('ps-portfolio-card-list');
+    const elPfBg=document.getElementById('ps-portfolio-bg');
 
     const state = { products:[], view:[], q:'' };
 
@@ -229,35 +283,57 @@
         elSpec.style.display='none';
       }
 
-      // v1.4.4 Applications (A6/A7) + image (A8 -> A5 -> img1 -> A11)
+      // v1.4.6 Applications (A6/A7) + image (A8) with hover cards
       (function(){
         const title = (p.A6||'').trim();
         const lines = (p.A7||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
         const imgUrl = p.A8 || p.A5 || p.img1 || p.A11 || '';
         if(title || lines.length || imgUrl){
-          elApp.style.display='block';
+          // 填充移动端列表布局内容
           elAppTitle.textContent = title || 'Applications';
           elAppList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
           if(imgUrl){ elAppImg.src = imgUrl; elAppImg.style.display='block'; }
           else { elAppImg.removeAttribute('src'); elAppImg.style.display='none'; }
+          
+          // 填充桌面端卡片布局内容
+          elAppCardTitle.textContent = title || 'Applications';
+          elAppCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+          if(p.A8){ elAppBg.style.backgroundImage = 'url('+p.A8+')'; }
+          else { elAppBg.style.backgroundImage = ''; }
+          
+          // 显示容器（CSS媒体查询会控制具体显示哪个）
+          elApp.style.display='block';
+          elHoverCards.style.display='grid';
         }else{
           elApp.style.display='none';
+          elHoverCards.style.display='none';
         }
       })();
 
-      // v1.4.4 Product Portfolio (A9/A10) + image (A11 -> A8 -> A5 -> img1)
+      // v1.4.6 Product Portfolio (A9/A10) + image (A11) with hover cards
       (function(){
         const title = (p.A9||'').trim();
         const lines = (p.A10||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
         const imgUrl = p.A11 || p.A8 || p.A5 || p.img1 || '';
         if(title || lines.length || imgUrl){
-          elPf.style.display='block';
+          // 填充移动端列表布局内容
           elPfTitle.textContent = title || 'Product Portfolio';
           elPfList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
           if(imgUrl){ elPfImg.src = imgUrl; elPfImg.style.display='block'; }
           else { elPfImg.removeAttribute('src'); elPfImg.style.display='none'; }
+          
+          // 填充桌面端卡片布局内容
+          elPfCardTitle.textContent = title || 'Product Portfolio';
+          elPfCardList.innerHTML = lines.map(s=>'<li>'+s+'</li>').join('') || '';
+          if(p.A11){ elPfBg.style.backgroundImage = 'url('+p.A11+')'; }
+          else { elPfBg.style.backgroundImage = ''; }
+          
+          // 显示容器（CSS媒体查询会控制具体显示哪个）
+          elPf.style.display='block';
+          elHoverCards.style.display='grid';
         }else{
           elPf.style.display='none';
+          elHoverCards.style.display='none';
         }
       })();
       if(window.parent){ setTimeout(()=>{ try{ parent.postMessage({type:'ps-resize',id:'inline',h:document.body.scrollHeight},'*'); }catch(e){} }, 60); }
@@ -286,6 +362,7 @@
         elSpec.style.display = 'none';
         elApp.style.display = 'none';
         elPf.style.display = 'none';
+        elHoverCards.style.display = 'none';
         elWelcome.style.display = 'block';
         return;
       }
