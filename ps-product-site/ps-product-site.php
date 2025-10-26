@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.4：在参数表下面新增“Applications（A6/A7）”与“Product Portfolio（A9/A10）”两块，分别配图优先使用 A8 与 A11（含合理回退）；并保留此前主图回退修复（img1→A5→A8→A11）。
- * Version: 1.4.4
+ * Description: v1.4.5：产品列表默认隐藏，仅在用户搜索时显示匹配结果；
+ * Version: 1.4.5
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
