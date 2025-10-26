@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PS Product Site (Catalog + JSON + Shortcode)
- * Description: v1.4.8：修复iframe模式下URL参数传递问题，支持?product=xxx参数在iframe中正确工作；
- * Version: 1.4.8
+ * Description: v1.4.9：修复带product参数URL的404问题，自动识别并加载正确的WordPress页面；
+ * Version: 1.4.9
  * Author: 超級の新人
  */
 if (!defined('ABSPATH')) exit;
@@ -17,7 +17,9 @@ class PS_Product_Site_Plugin {
     add_action('admin_enqueue_scripts',[$this,'enqueue_admin']);
     add_action('rest_api_init',[$this,'register_rest']);
     add_shortcode('product_catalog',[$this,'shortcode_catalog']);
-    add_action('template_redirect',[$this,'maybe_render_iframe']);
+    add_action('template_redirect',[$this,'maybe_render_iframe'],1);
+    add_action('template_redirect',[$this,'handle_product_param_404'],0);
+    add_filter('template_include',[$this,'prevent_404_for_product_param'],999);
     register_activation_hook(__FILE__,[$this,'on_activate']);
   }
 
@@ -143,7 +145,101 @@ class PS_Product_Site_Plugin {
     return $html;
   }
 
+  function handle_product_param_404(){
+    // 如果有product参数但返回404，说明WordPress不识别带参数的URL
+    if(isset($_GET['product']) && is_404()){
+      global $wp_query, $wp_the_query;
+      // 获取当前请求的URI路径（移除查询参数）
+      $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+      
+      // 从路径中提取可能的页面slug
+      // 例如：/index.php/slk-prodcucts-sma-cloned-cloned/ 或 /slk-prodcucts-sma-cloned-cloned/
+      $parts = explode('/', trim($request_uri, '/'));
+      
+      // 尝试不同的路径组合
+      $possible_slugs = [];
+      for($i = count($parts) - 1; $i >= 0; $i--){
+        if(!empty($parts[$i])){
+          $possible_slugs[] = implode('/', array_slice($parts, $i));
+        }
+      }
+      
+      // 查找匹配的页面
+      foreach($possible_slugs as $slug){
+        $page = get_page_by_path($slug);
+        if($page && $page->post_status === 'publish'){
+          // 找到了对应页面，修改查询对象
+          $wp_query->is_404 = false;
+          $wp_query->is_page = true;
+          $wp_query->is_singular = true;
+          $wp_query->queried_object = $page;
+          $wp_query->queried_object_id = $page->ID;
+          $wp_query->posts = [$page];
+          $wp_query->post_count = 1;
+          $wp_query->max_num_pages = 1;
+          $wp_query->found_posts = 1;
+          
+          global $post;
+          $post = $page;
+          setup_postdata($post);
+          
+          // 也更新主查询对象
+          $wp_the_query = $wp_query;
+          
+          status_header(200);
+          return;
+        }
+      }
+    }
+  }
+
+  function prevent_404_for_product_param($template){
+    if(isset($_GET['product']) && is_404()){
+      global $wp_query;
+      $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+      $parts = explode('/', trim($request_uri, '/'));
+      $possible_slugs = [];
+      for($i = count($parts) - 1; $i >= 0; $i--){
+        if(!empty($parts[$i])){
+          $possible_slugs[] = implode('/', array_slice($parts, $i));
+        }
+      }
+      foreach($possible_slugs as $slug){
+        $page = get_page_by_path($slug);
+        if($page && $page->post_status === 'publish'){
+          $wp_query->is_404 = false;
+          $wp_query->is_page = true;
+          $wp_query->is_singular = true;
+          $wp_query->queried_object = $page;
+          $wp_query->queried_object_id = $page->ID;
+          $wp_query->posts = [$page];
+          $wp_query->post_count = 1;
+          $wp_query->max_num_pages = 1;
+          $wp_query->found_posts = 1;
+          global $post;
+          $post = $page;
+          setup_postdata($post);
+          status_header(200);
+          // 返回合适的模板，优先使用主题的页面模板
+          $page_template = get_page_template();
+          if($page_template && file_exists($page_template)){
+            return $page_template;
+          }
+          $singular_template = get_singular_template();
+          if($singular_template && file_exists($singular_template)){
+            return $singular_template;
+          }
+          // 最后的回退：返回 index.php
+          $index_template = get_query_template('index');
+          return $index_template ?: $template;
+        }
+      }
+    }
+    return $template;
+  }
+
   function maybe_render_iframe(){
+    // 处理iframe请求
     if(isset($_GET['ps_catalog_iframe'])){
       $id = sanitize_text_field($_GET['ps_catalog_iframe']);
       status_header(200); nocache_headers(); header('Content-Type: text/html; charset=utf-8');
